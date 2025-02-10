@@ -3,10 +3,12 @@ const express = require('express');
 const app = express();
 const { connectToDB } = require('./db/dbConfig');
 connectToDB();
+require('dotenv').config();
+const frontend_url = process.env.FRONTEND_URL;
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Your frontend URL
-    credentials: true, // If you're using cookies/sessions
+    origin: frontend_url, 
+    credentials: true, 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
