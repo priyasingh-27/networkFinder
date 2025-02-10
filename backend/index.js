@@ -6,6 +6,13 @@ connectToDB();
 require('dotenv').config();
 const frontend_url = process.env.FRONTEND_URL;
 
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Serve React app for all other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+});
+
 app.use(cors({
     origin: frontend_url, 
     credentials: true, 
