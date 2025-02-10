@@ -1,5 +1,25 @@
 const { pool } = require('../db/dbConfig');
 
+async function findUserWithZeroCredits() {
+    try{
+        const [rows] = await pool.promise().query('SELECT * FROM user WHERE credits=?', [0]);
+        if (rows.length == 0) {
+            let errObj = {
+                code: 404,
+                message:'User not found'
+            }
+            return [errObj, null];
+        }
+        return [null,rows];
+    }catch(err){
+        let errObj = {
+            code: 500,
+            message:'Internal server error'
+        }
+        return [errObj, null];
+    }
+}
+
 async function findUserByEmail(email) {
     try {
         const [rows] = await pool.promise().query('SELECT * FROM user WHERE email=?', [email]);
@@ -21,5 +41,6 @@ async function findUserByEmail(email) {
 }
 
 module.exports = {
-    findUserByEmail
+    findUserByEmail,
+    findUserWithZeroCredits
 }

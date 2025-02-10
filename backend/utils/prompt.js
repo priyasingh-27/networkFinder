@@ -5,7 +5,8 @@ const prepare_prompt = (query) => {
         {"name": "Sham", "category": "Ecommerce", "type": "Mentor"},
         {"name": "Inga", "category": "photography", "type": "Mentor"},
         {"name": "Suchi", "category": "Blockchain", "type": "investor"},
-        {"name": "Anamika", "category": "AI", "type": "Investor"}
+        {"name": "Anamika", "category": "AI", "type": "Investor" },
+        {"name": "Mira", "category": "AI", "type": "Investor"}
     ];
 
     const prompt = `

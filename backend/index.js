@@ -1,7 +1,15 @@
+const cors=require('cors')
 const express = require('express');
 const app = express();
 const { connectToDB } = require('./db/dbConfig');
 connectToDB();
+
+app.use(cors({
+    origin: 'http://localhost:5173', // Your frontend URL
+    credentials: true, // If you're using cookies/sessions
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 

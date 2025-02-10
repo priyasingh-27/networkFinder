@@ -1,16 +1,58 @@
-import { useState } from 'react'
-import './App.css'
-import Login from './components/auth/google_auth'
+"use client"
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useState, useEffect } from "react"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import Login from "./components/Login/Login"
+import Search from "./components/Search/Search"
+import "./App.css"
+
+const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem("userToken")
+    if (token) {
+      setIsAuthenticated(true)
+    }
+  }, [])
+
+  const handleLogin = () => {
+    setIsAuthenticated(true)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("userToken")
+    setIsAuthenticated(false)
+  }
 
   return (
-    <>
-      <h1>Hello, Priya</h1>
-      <Login></Login>
-    </>
+    <Router>
+      <div className="app">
+        {isAuthenticated && (
+          <nav className="navbar">
+            <div className="navbar-content">
+              <h1 className="app-title">Startup Network Finder</h1>
+              <button onClick={handleLogout} className="logout-button">
+                Logout
+              </button>
+            </div>
+          </nav>
+        )}
+
+        <div className="main-content">
+          <Routes>
+            <Route
+              path="/login"
+              element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/search" replace />}
+            />
+            <Route path="/search" element={isAuthenticated ? <Search /> : <Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to={isAuthenticated ? "/search" : "/login"} replace />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   )
 }
 
 export default App
+
