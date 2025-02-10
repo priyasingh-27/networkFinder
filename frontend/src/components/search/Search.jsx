@@ -1,9 +1,8 @@
 "use client"
-
+const base_url = import.meta.envVITE_BACKEND_URL;
 import { useState, useEffect, useCallback } from "react"
 import "./Search.css"
 
-const API_BASE_URL = "http://localhost:3000"
 
 const useCredits = (email) => {
   const [credits, setCredits] = useState(0)
@@ -11,7 +10,7 @@ const useCredits = (email) => {
 
   const fetchCredits = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/user/credits`, {
+      const res = await fetch(`${base_url}/user/credits`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("userToken")}`,
@@ -57,7 +56,7 @@ const Search = () => {
     setResponse([])
 
     try {
-      const res = await fetch(`${API_BASE_URL}/user/send-query`, {
+      const res = await fetch(`${base_url}/user/send-query`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,6 @@
 import { useGoogleLogin } from "@react-oauth/google"
 import "./Login.css"
+const base_url = import.meta.envVITE_BACKEND_URL;
 
 const Login = ({ onLogin }) => {
   const login = useGoogleLogin({
@@ -15,7 +16,7 @@ const Login = ({ onLogin }) => {
         })
         const userInfo = await userInfoResponse.json()
 
-        await fetch("http://localhost:3000/user/register", {
+        await fetch(`${base_url}/user/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
