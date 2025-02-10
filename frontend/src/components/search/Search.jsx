@@ -1,5 +1,5 @@
 "use client"
-const base_url = import.meta.envVITE_BACKEND_URL;
+const base_url = import.meta.env.VITE_BACKEND_URL;
 import { useState, useEffect, useCallback } from "react"
 import "./Search.css"
 

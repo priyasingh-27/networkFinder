@@ -1,6 +1,6 @@
 import { useGoogleLogin } from "@react-oauth/google"
 import "./Login.css"
-const base_url = import.meta.envVITE_BACKEND_URL;
+const base_url = import.meta.env.VITE_BACKEND_URL;
 
 const Login = ({ onLogin }) => {
   const login = useGoogleLogin({
