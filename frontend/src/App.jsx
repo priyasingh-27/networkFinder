@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Login from "frontend/src/components/Login/Login.jsx";
-import Search from "frontend/src/components/Search/Search.jsx";
+import Login from "./components/login/Login.jsx";
+import Search from "./components/search/Search.jsx";
 import "./App.css";
 
 const App = () => {
