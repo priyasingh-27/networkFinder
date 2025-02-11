@@ -1,13 +1,11 @@
-const prepare_prompt = (query) => {
-    const mentors = [
-        {"name": "Himani", "category": "video", "type": "mentor"},
-        {"name": "Himanshu", "category": "Marketing", "type": "investor"},
-        {"name": "Sham", "category": "Ecommerce", "type": "Mentor"},
-        {"name": "Inga", "category": "photography", "type": "Mentor"},
-        {"name": "Suchi", "category": "Blockchain", "type": "investor"},
-        {"name": "Anamika", "category": "AI", "type": "Investor" },
-        {"name": "Mira", "category": "AI", "type": "Investor"}
-    ];
+const { findAllNetwork }=require('../repository/network.repository')
+
+const prepare_prompt =async (query) => {
+    const [err, networks] = await findAllNetwork();
+    if (err) {
+        if (err.code == 404) return notFoundResponse(res, 'User Not Found');
+        if (err.code == 500) return serverErrorResponse(res, 'Internal server error');
+    }
 
     const prompt = `
     Your task is to perform the following actions:
@@ -15,7 +13,7 @@ const prepare_prompt = (query) => {
     2 - According to the query you need to search in the given list of mentors/investors delimited by <>
     3 - You need to output in the format: ["name1" ,"name2"...]
 
-    List of mentors/investors:<${JSON.stringify(mentors)}>
+    List of mentors/investors:<${JSON.stringify(networks)}>
     Query:<${query}>
     `;
 

@@ -57,7 +57,7 @@ const sendQuery = async (req, res) => {
             user.credits -= 1;
             await pool.promise().query('UPDATE user SET credits = ? WHERE email = ?', [user.credits, email]);
             
-            const prompt = prepare_prompt(query);
+            const prompt = await prepare_prompt(query);
             const result = await model.generateContent(prompt);
             const output = result.response.candidates[0].content.parts;
             // console.log(result.response.text());
