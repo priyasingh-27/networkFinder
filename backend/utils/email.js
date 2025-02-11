@@ -8,65 +8,121 @@ const { pool } = require('../db/dbConfig');
 const sender = process.env.SENDER;
 const pass = process.env.PASS;
 const GMAIL_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GMAIL_CLIENT_SECRET = process.env.CLIENT_SECRET;
-const GMAIL_REFRESH_TOKEN = process.env.REFRESH_TOKEN;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 const GMAIL_REDIRECT_URI = 'https://developers.google.com/oauthplayground';
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
-const oAuth2Client= new google.auth.OAuth2(
+
+const oAuth2Client = new google.auth.OAuth2(
     GMAIL_CLIENT_ID,
-    GMAIL_CLIENT_SECRET,
+    CLIENT_SECRET,
     GMAIL_REDIRECT_URI
 );
 
-oAuth2Client.setCredentials({refresh_token: GMAIL_REFRESH_TOKEN});
+const SCOPES = [
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.modify'
+];
 
-async function checkEmailForRecharge(userEmail){
+oAuth2Client.setCredentials({
+    access_token: ACCESS_TOKEN,
+    refresh_token: REFRESH_TOKEN,
+    scope: SCOPES.join(' ')
+});
+
+
+async function checkEmailForRecharge(userEmail) {
     try {
+        // Get fresh access token
+        const { token } = await oAuth2Client.getAccessToken();
         const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
-        
-        const response = await gmail.users.messages.list({
-          userId: 'me',
-          q: `subject:"recharge 5 credits" from:${userEmail}`,
-          maxResults: 1
+
+        // First, search for emails matching our criteria
+        const searchResponse = await gmail.users.messages.list({
+            userId: 'me',
+            q: `subject:"recharge 5 credits" from:${userEmail} is:unread`,
+            maxResults: 1
         });
-    
-        if (response.data.messages && response.data.messages.length > 0) {
-            const messageId = response.data.messages[0].id;
-          // Get the full message details
-            const message = await gmail.users.messages.get({
-                userId: 'me',
-                id: messageId,
-                format: 'full'
-            });
 
-            console.log('Message labels before:', message.data.labelIds);
-    
-
-            await gmail.users.messages.modify({
-              userId: 'me',
-              id: messageId,
-              requestBody: {
-                removeLabelIds: ['UNREAD'],
-                addLabelIds: ['READ']
-              }
-            });
-            
-            // Verify the change
-            const updatedMessage = await gmail.users.messages.get({
-                userId: 'me',
-                id: messageId
-            });
-            console.log('Message labels after:', updatedMessage.data.labelIds);
-
-            return true; 
-          
+        if (!searchResponse.data.messages || searchResponse.data.messages.length === 0) {
+            console.log('No matching emails found');
+            return false;
         }
-        
-        return false; 
-      } catch (error) {
-        console.error('Error checking email:', error);
+
+        // Get the full message details
+        const messageId = searchResponse.data.messages[0].id;
+        const message = await gmail.users.messages.get({
+            userId: 'me',
+            id: messageId,
+            format: 'full'
+        });
+
+        // Extract subject and sender from headers
+        const headers = message.data.payload.headers;
+        const subject = headers.find(header => header.name === 'Subject')?.value;
+        const from = headers.find(header => header.name === 'From')?.value;
+
+        console.log('Found email:', {
+            subject,
+            from,
+            date: new Date(parseInt(message.data.internalDate)).toLocaleString()
+        });
+
+        // Mark the message as read by only removing the UNREAD label
+        await gmail.users.messages.modify({
+            userId: 'me',
+            id: messageId,
+            requestBody: {
+                removeLabelIds: ['UNREAD']
+            }
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error in checkEmailForRecharge:', error.message);
+        if (error.response) {
+            console.error('Response error data:', error.response.data);
+        }
         throw error;
-      }
+    }
+}
+
+// Update handleCreditRecharge to handle errors better
+async function handleCreditRecharge(email) {
+    try {
+        const [err, user] = await findUserByEmail(email);
+        if (err) {
+            console.error('Error finding user:', err);
+            return;
+        }
+
+        const emailExists = await checkEmailForRecharge(email);
+        if (!emailExists) {
+            console.log(`No recharge email found for ${email}`);
+            return;
+        }
+
+        if (!user.has_recharged) {
+            await pool.promise().query(
+                'UPDATE user SET credits = ?, has_recharged = ? WHERE email = ?', 
+                [5, true, email]
+            );
+            await sendEmail(
+                email, 
+                'Credits Recharged', 
+                'Your account has been recharged with 5 credits.'
+            );
+        } else {
+            await sendEmail(
+                email, 
+                'Credit Recharge Request', 
+                'Sorry, we are not offering additional credits at this time.'
+            );
+        }
+    } catch (err) {
+        console.error('Error handling credit recharge:', err);
+    }
 }
 
 async function sendEmail(email,sub,text) {
@@ -100,40 +156,23 @@ async function sendEmail(email,sub,text) {
     
 };
 
-async function handleCreditRecharge(email) {
-    try{
-        const [err,user]=await findUserByEmail(email);
-        if (err) {
-            if (err.code == 404) return notFoundResponse(res, 'User Not Found');
-            if (err.code == 500) return serverErrorResponse(res, 'Internal server error');
-        }
-        if(!user.has_recharged){
-            await pool.promise().query('UPDATE user SET credits = ?, has_recharged=? WHERE email = ?', [5, true ,email]);
-            await sendEmail(email, 'Credits Recharged', 'Your account has been recharged with 5 credits.');
 
-        }else{
-            await sendEmail(email, 'Credit Recharge Request', 'Sorry, we are not offering additional credits at this time.');
-        }
-    }catch(err){
-        console.log('Error handling credit recharge: ',err);
-    }
-}
 
-cron.schedule('*/3 * * * *',async()=>{
-    try{
+cron.schedule('*/1 * * * *', async () => {
+    try {
         console.log('Checking for recharge mail...');
-        const [err,users]=await findUserWithZeroCredits();
+        const [err, users] = await findUserWithZeroCredits();
         if (err) {
-            if (err.code == 404) return notFoundResponse(res, 'User Not Found');
-            if (err.code == 500) return serverErrorResponse(res, 'Internal server error');
+            console.error('Error finding users with zero credits:', err);
+            return;
         }
-        for(const user of users){
+        for (const user of users) {
             await handleCreditRecharge(user.email);
         }
-    }catch(err){
-        console.log(err);
+    } catch (err) {
+        console.error('Cron job error:', err);
     }
-})
+});
 
 module.exports = {
     sendEmail,
