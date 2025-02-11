@@ -4,12 +4,14 @@ const host = process.env.HOST;
 const user = process.env.DB_USER;
 const password = process.env.DB_PASSWORD;
 const db_name = process.env.DB_NAME;
+const db_port = process.env.DB_PORT;
 
 const pool = mysql.createPool({
     host: host,
     user: user,
     password: password,
     database: db_name,
+    port: db_port,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
