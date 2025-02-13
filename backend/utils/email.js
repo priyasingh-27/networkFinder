@@ -69,7 +69,6 @@ async function checkEmailForRecharge(userEmail) {
             date: new Date(parseInt(message.data.internalDate)).toLocaleString()
         });
 
-        // Mark the message as read by only removing the UNREAD label
         await gmail.users.messages.modify({
             userId: 'me',
             id: messageId,
