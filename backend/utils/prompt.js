@@ -13,35 +13,34 @@ const prepare_prompt =async (query) => {
     INSTRUCTIONS:
     1. Analyze the user query delimited by <query></query> for:
     - Primary industry/category (e.g., SaaS, AI, Video, Blockchain, etc.)
-    - Type, Whether they're seeking an investor, mentor or founder
-    - both the category and Type SHOULD MATCH 
+    - Type needed (investor, mentor, or founder)
+    - IMPORTANT: Both category AND type must match EXACTLY
 
     2. Search through the network members delimited by <network></network> and find matches based on:
-    - Category/industry alignment
-    - Role type (investor or mentor) matching the query needs
-    - Return ONLY the names of matching network members
+    - Category must match EXACTLY (case-insensitive)
+    - Type must match EXACTLY (case-insensitive)
+    - Only return names where BOTH category AND type match
     
     3. Output Rules:
     - Return ONLY a JSON array of names
     - Do not include any markdown formatting or explanation text
     - If no matches found, return ["None"]
-    
+    - ONLY include names where both category AND type match exactly
+
     4. Examples:
-    Query: "We are a video streaming startup looking for investors to scale our platform"
-    Expected analysis:
-    - Category: Video
-    - Type needed: Investor
+    Query: "Looking for a SaaS founder"
+    - Must match: category=SaaS AND type=Founder
+    - Should return: ["Vikram"] (only if both conditions match)
     
-    Query: "Need mentor guidance for our blockchain product development"
-    Expected analysis:
-    - Category: Blockchain
-    - Type needed: Mentor
+    Query: "Need AI investor"
+    - Must match: category=AI AND type=Investor
+    - Should return: ["Ria"] (only if both conditions match)
 
     Network members: <network>${JSON.stringify(networks)}</network>
 
     User Query: <query>${query}</query>
 
-    Provide ONLY the array of names matching the format described above.
+    Return ONLY the array of names where BOTH category AND type match exactly.
     `;
 
     
