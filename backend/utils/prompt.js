@@ -21,7 +21,8 @@ const prepare_prompt =async (query) => {
     - Return ONLY the names of matching network members
     
     3. Output Rules:
-    - Return an array of matching names in exactly this format: ["name1", "name2"]
+    - Return ONLY a JSON array of names
+    - Do not include any markdown formatting or explanation text
     - If no matches found, return ["None"]
     
     4. Examples:
