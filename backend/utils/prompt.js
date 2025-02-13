@@ -13,7 +13,8 @@ const prepare_prompt =async (query) => {
     INSTRUCTIONS:
     1. Analyze the user query delimited by <query></query> for:
     - Primary industry/category (e.g., SaaS, AI, Video, Blockchain, etc.)
-    - Whether they're seeking an investor, mentor or founder
+    - Type, Whether they're seeking an investor, mentor or founder
+    - both the category and Type SHOULD MATCH 
 
     2. Search through the network members delimited by <network></network> and find matches based on:
     - Category/industry alignment
