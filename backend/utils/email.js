@@ -34,11 +34,9 @@ oAuth2Client.setCredentials({
 
 async function checkEmailForRecharge(userEmail) {
     try {
-        // Get fresh access token
         const { token } = await oAuth2Client.getAccessToken();
         const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
 
-        // First, search for emails matching our criteria
         const searchResponse = await gmail.users.messages.list({
             userId: 'me',
             q: `subject:"recharge 5 credits" from:${userEmail} is:unread`,
@@ -50,7 +48,6 @@ async function checkEmailForRecharge(userEmail) {
             return false;
         }
 
-        // Get the full message details
         const messageId = searchResponse.data.messages[0].id;
         const message = await gmail.users.messages.get({
             userId: 'me',
@@ -58,7 +55,6 @@ async function checkEmailForRecharge(userEmail) {
             format: 'full'
         });
 
-        // Extract subject and sender from headers
         const headers = message.data.payload.headers;
         const subject = headers.find(header => header.name === 'Subject')?.value;
         const from = headers.find(header => header.name === 'From')?.value;
@@ -87,7 +83,6 @@ async function checkEmailForRecharge(userEmail) {
     }
 }
 
-// Update handleCreditRecharge to handle errors better
 async function handleCreditRecharge(email) {
     try {
         const [err, user] = await findUserByEmail(email);
@@ -149,7 +144,7 @@ async function sendEmail(email,sub,text) {
         
     }
     catch (err) {
-        console.log('Error sending email', err);
+        console.error('Error sending email', err);
         throw err;
     }
     

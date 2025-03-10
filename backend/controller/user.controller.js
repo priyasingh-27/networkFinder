@@ -6,7 +6,6 @@ const { sendEmail } = require('../utils/email');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const prepare_prompt = require('../utils/prompt');
 require('dotenv').config();
-// const { OAuth2Client } = require('google-auth-library'); 
 const gemini_key = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(gemini_key);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -30,7 +29,7 @@ const getCredits = async (req, res) => {
 
         return successResponse(res, user.credits, 'Credits fetched successfully');
     }catch (err) {
-        console.log(err);
+        console.error(err);
         return serverErrorResponse(res,'Internal server error')
     }
 }
@@ -60,9 +59,7 @@ const sendQuery = async (req, res) => {
             const prompt = await prepare_prompt(query);
             const result = await model.generateContent(prompt);
             const output = result.response.candidates[0].content.parts;
-            // console.log(result.response.text());
-
-            // const cleanedOutput = JSON.parse(output[0].text);
+            
             return successResponse(res,output, 'Query processed successfully');
         }
         else {
@@ -70,7 +67,7 @@ const sendQuery = async (req, res) => {
         }
 
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return serverErrorResponse(res, 'Internal Server Error');
     }
 }

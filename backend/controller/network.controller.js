@@ -15,7 +15,7 @@ const getAllNetworks = async (req, res) => {
         }
         return successResponse(res, networks, 'All the networks retrieved successfully');
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return serverErrorResponse(res, 'Internal Server Error');
     }
 }
@@ -35,7 +35,7 @@ const registerNetwork = async (req, res)=>{
         return successResponse(res, 'User registered successfully');
 
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return serverErrorResponse(res, 'Internal Server Error');
     }
 }
