@@ -1,10 +1,10 @@
-"use client"
+import React from 'react';
 const base_url = import.meta.env.VITE_BACKEND_URL;
 import { useState, useEffect, useCallback } from "react"
 import "./Search.css"
 
 
-const useCredits = (email) => {
+const userCredits = (email) => {
   const [credits, setCredits] = useState(0)
   const [error, setError] = useState("")
 
@@ -46,10 +46,10 @@ const Search = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const email = localStorage.getItem("email")
-  const { credits, fetchCredits } = useCredits(email)
+  const { credits, fetchCredits } = userCredits(email)
 
   const handleSearch = async () => {
-    if (!query.trim()) return
+    if (!query.trim()) return;
 
     setIsLoading(true)
     setError("")
@@ -69,9 +69,7 @@ const Search = () => {
 
       if (data.code === 200) {
         try {
-          // Extract the text content from the first part
           const jsonString = data.data[0].text;
-          // Parse the JSON string into an array
           const parsedNames = JSON.parse(jsonString);
           setResponse(parsedNames);
         } catch (parseError) {
